@@ -1,0 +1,21 @@
+--- tests/ct001.myout	2021-03-29 21:56:54.736170200 +0100
++++ tests/ct001.out	2021-03-29 19:46:55.821331000 +0100
+@@ -0,0 +1,18 @@
++task 1
++duplicate description
++9: no such task
++invalid time
++0
++user already exists
++no such task
++no such user
++no such activity
++duration=0 slack=-1
++task already started
++no such activity
++no such activity
++duplicate activity
++invalid description
++invalid description
++invalid description
++too many activities
