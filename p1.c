@@ -10,7 +10,7 @@
 
 #define DESCMAX 50
 #define USERMAX 20
-#define CARMAX 20
+#define CARMAX 20 + 1
 #define ACTMAX 10
 #define MAXINPUT 38885 /*5 + 4*899 + 3*899 + 2*89 + 9*/
 #define TASKMAX 10000
@@ -273,11 +273,11 @@ int addAct(int actUsed, char arguments[], struct act actBank[]) {
       if (i != 0)
         jar[i - 1] = arguments[i];
       ++i;
-    }
-    jar[i] = '\0';
+  }
+    jar[i-1] = '\0';
     i = 0;
     while (jar[i] != '\0') {
-      if (!((jar[i] >= 'A' && jar[i] <= 'Z') || !(jar[i] == ' ') || !(jar[i] == '\t'))) {
+      if (!((jar[i] >= 'A' && jar[i] <= 'Z') || jar[i] != ' ' || jar[i] != '\t')) {
         printf("invalid description\n");
         return actUsed;
       }
@@ -289,10 +289,11 @@ int addAct(int actUsed, char arguments[], struct act actBank[]) {
         return actUsed;
       }
     strcpy(actBank[actUsed].activity, jar);
+    return ++actUsed;
   } else
     for (i = 0; i < actUsed; ++i)
       printf("%s\n", actBank[i].activity);
-  return ++actUsed;
+  return actUsed;
 }
 
 int* sortElements(int tasksUsed, int *IDs, struct task taskBank[]){
