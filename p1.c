@@ -43,7 +43,7 @@ int timeForward(char arguments[], int time, int id, struct task taskBank[]);
 int addUser(char arguments[], struct user userBank[], int userUsed);
 void moveTask(int tasksUsed, struct task taskBank[], struct user userBank[], 
               char arguments[], struct act actBank[]);
-void actList(char arguments[], struct act actBank[]);
+void actList(char arguments[], struct act actBank[], struct task taskBank[]);
 int addAct(int actUsed, char arguments[], struct act actBank[]);
 int* sortElements(int tasksUsed, int *IDs, struct task taskBank[]);
 
@@ -80,7 +80,7 @@ int main() {
         moveTask(tasksUsed, taskBank, userBank, arguments, actBank);
         break;
       case 'd':
-        actList(arguments, actBank);
+        actList(arguments, actBank, taskBank);
         break;
       case 'a':
         actUsed = addAct(actUsed, arguments, actBank);
@@ -240,9 +240,9 @@ void moveTask(int tasksUsed, struct task taskBank[], struct user userBank[],
   }
 }
 
-void actList(char arguments[], struct act actBank[]) {
-  int i = 0, result = 1;
-  char jar[CARMAX];
+void actList(char arguments[], struct act actBank[], struct task taskBank[]) {
+  int i = 0, result = 1, j, h, sameAct[TASKMAX];
+  char jar[CARMAX], sameTime[TASKMAX];
 
   while (arguments[i] != '\n') {
     if (i != 0)
@@ -253,9 +253,17 @@ void actList(char arguments[], struct act actBank[]) {
 
   for (i = 0; i < CARMAX; ++i)
     if (!strcmp(jar, actBank[i].activity)) {
-      printf("%s\n", actBank[i].activity);
+      h = i;
       result = 0;
     }
+  i = 0;
+  for (j = 0; j < TASKMAX; j++){
+    if (!strcmp(taskBank[j].act, actBank[h].activity)){
+      sameAct[i] = j;
+      ++i;
+    }
+  }
+
   if (result)
     printf("no such activity\n");
 }
