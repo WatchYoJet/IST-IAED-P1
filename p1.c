@@ -6,15 +6,13 @@
 
 #include <string.h>
 
-#include "eval.c"
-
 /*---------------------------Defines---------------------------------*/
 
 #define DESCMAX 50
 #define USERMAX 20
 #define CARMAX 20
 #define ACTMAX 10
-#define MAXINPUT 500
+#define MAXINPUT 38885 /*5 + 4*899 + 3*899 + 2*89 + 9*/
 #define TASKMAX 10000
 #define DIFFUSERMAX 50
 
@@ -43,9 +41,11 @@ int addTask(int id, char arguments[], struct task taskBank[]);
 void taskList(int id, struct task taskBank[], char arguments[]);
 int timeForward(char arguments[], int time, int id, struct task taskBank[]);
 int addUser(char arguments[], struct user userBank[], int userUsed);
-void moveTask(int tasksUsed, struct task taskBank[TASKMAX], struct user userBank[], char arguments[], struct act actBank[]);
+void moveTask(int tasksUsed, struct task taskBank[], struct user userBank[], 
+              char arguments[], struct act actBank[]);
 void actList(char arguments[], struct act actBank[]);
 int addAct(int actUsed, char arguments[], struct act actBank[]);
+int* sortElements(int tasksUsed, int *IDs, struct task taskBank[]);
 
 /*----------------------------Main-----------------------------------*/
 
@@ -56,9 +56,9 @@ int main() {
   struct user userBank[DIFFUSERMAX];
   struct act actBank[ACTMAX];
 
-  strcpy(actBank[0].activity,"TO DO");
-  strcpy(actBank[1].activity,"IN PROGRESS");
-  strcpy(actBank[2].activity,"DONE");
+  strcpy(actBank[0].activity, "TO DO");
+  strcpy(actBank[1].activity, "IN PROGRESS");
+  strcpy(actBank[2].activity, "DONE");
 
   while ((command = getchar()) != 'q') {
     fgets(arguments, MAXINPUT + 2, stdin);
@@ -111,21 +111,24 @@ int addTask(int id, char arguments[], struct task taskBank[]) {
     taskBank[id - 1].timeRequested = time;
     strcpy(taskBank[id - 1].act, "TO DO");
     strcpy(taskBank[id - 1].desc, descript);
-    printf("task %d %s\n", id, descript);
+    printf("task %d\n", id);
   }
   return ++id;
 }
 
 void taskList(int id, struct task taskBank[], char arguments[]) {
-  int idCounter, i = 0, inputid, j, reset;
+  int  i = 0, inputid, j, reset, toSort[TASKMAX], *sorted;
   char jar[MAXINPUT], numstr[5], pote[5];
 
   strcpy(jar, arguments);
-
-  if (jar[0] == '\n')
-    for (idCounter = 0; idCounter < id - 1; ++idCounter)
-      printf("%d %s #%d %s\n", taskBank[idCounter].id, taskBank[idCounter].act,
-        taskBank[idCounter].timeRequested, taskBank[idCounter].desc);
+  if (jar[0] == '\n'){
+    for (i = 0; i < id - 1; ++i)
+      toSort[i] = i;
+    sorted = sortElements(id, toSort, taskBank);
+    for (i = 0; i < id - 1; ++i)
+      printf("%d %s #%d %s\n", taskBank[sorted[i]].id, taskBank[sorted[i]].act,
+        taskBank[sorted[i]].timeRequested, taskBank[sorted[i]].desc);
+  }
   else {
     while (jar[i] != '\n') {
       if ((jar[i] != ' ') && (jar[i] != '\t')) {
@@ -167,68 +170,75 @@ int timeForward(char arguments[], int time, int id, struct task taskBank[]) {
   return time;
 }
 
-int addUser(char arguments[], struct user userBank[], int userUsed) {
-  int i;
-  char username[USERMAX];
+int addUser(char username[], struct user userBank[], int userUsed) {
+  int i=0;
+  char jar[USERMAX];
 
-  sscanf(arguments, "%s", username);
-  for (i = 0; i < DIFFUSERMAX; ++i)
-    if (!strcmp(userBank[i].username, username)) {
-      printf("user already exists\n");
+  if (username[0] != '\n') {
+    while (username[i] != '\n') {
+    if (i != 0)
+      jar[i - 1] = username[i];
+    ++i;
+  }
+    jar[i - 1] = '\0';
+    for (i = 0; i < DIFFUSERMAX; ++i)
+      if (!strcmp(userBank[i].username, jar)) {
+        printf("user already exists\n");
+        return userUsed;
+      }
+    if (userUsed == DIFFUSERMAX) {
+      printf("too many users\n");
       return userUsed;
     }
-  if (userUsed == DIFFUSERMAX) {
-    printf("too many users\n");
+    strcpy(userBank[userUsed].username, jar);
+    return ++userUsed;
+  } 
+  else {
+    if (userUsed != 0)
+      for (i = 0; i < userUsed; ++i)
+        printf("%s\n", userBank[i].username);
     return userUsed;
   }
-  strcpy(userBank[userUsed].username, username);
-  if (userUsed != 0)
-    for (i = 0; i <= userUsed; ++i)
-      printf("%s\n", userBank[i].username);
-  return ++userUsed;
 }
 
-void moveTask(int tasksUsed, struct task taskBank[TASKMAX], struct user userBank[],
-               char arguments[], struct act actBank[]){
+void moveTask(int tasksUsed, struct task taskBank[], struct user userBank[],
+  char arguments[], struct act actBank[]) {
 
-  int idRequested, val=1, i,j=0, h=0;
+  int idRequested, val = 1, i, j = 0, h = 0;
   char userRequested[USERMAX], actRequested[CARMAX];
 
-  sscanf(arguments, "%d %s %[^\n]", &idRequested, userRequested, actRequested);
+  sscanf(arguments, "%d %s %[^\n]", & idRequested, userRequested, actRequested);
 
-  for(i=0; i < DIFFUSERMAX; ++i)
+  for (i = 0; i < DIFFUSERMAX; ++i)
     if (!strcmp(userBank[i].username, userRequested))
       ++j;
   if (!j)
     printf("no such user\n");
-  for(i=0; i < ACTMAX; ++i)
+  for (i = 0; i < ACTMAX; ++i)
     if (!strcmp(actBank[i].activity, actRequested))
       ++h;
   if (!h)
     printf("no such activity\n");
 
-  if (idRequested >= tasksUsed){
+  if (idRequested >= tasksUsed) {
     printf("no such task\n");
     val = 0;
-  }
-  else if (!strcmp(actRequested,"TO DO")){
+  } else if (!strcmp(actRequested, "TO DO")) {
     printf("task already started\n");
     val = 0;
   }
 
-  if (j && h && val){
-    if (!strcmp(actRequested, "DONE")){
-      printf("duration=%d slack=%d\n", taskBank[idRequested-1].t0, 
-                                taskBank[idRequested-1].t0-taskBank[idRequested-1].timeRequested);
-      strcpy(taskBank[idRequested-1].act, "DONE");
-    }
-    else{
-      strcpy(taskBank[idRequested-1].act, actRequested);
-      taskBank[idRequested-1].started = 1;
+  if (j && h && val) {
+    if (!strcmp(actRequested, "DONE")) {
+      printf("duration=%d slack=%d\n", taskBank[idRequested - 1].t0,
+        taskBank[idRequested - 1].t0 - taskBank[idRequested - 1].timeRequested);
+      strcpy(taskBank[idRequested - 1].act, "DONE");
+    } else {
+      strcpy(taskBank[idRequested - 1].act, actRequested);
+      taskBank[idRequested - 1].started = 1;
     }
   }
 }
-
 
 void actList(char arguments[], struct act actBank[]) {
   int i = 0, result = 1;
@@ -239,7 +249,7 @@ void actList(char arguments[], struct act actBank[]) {
       jar[i - 1] = arguments[i];
     ++i;
   }
-  jar[i-1] = '\0';
+  jar[i - 1] = '\0';
 
   for (i = 0; i < CARMAX; ++i)
     if (!strcmp(jar, actBank[i].activity)) {
@@ -249,7 +259,6 @@ void actList(char arguments[], struct act actBank[]) {
   if (result)
     printf("no such activity\n");
 }
-
 
 int addAct(int actUsed, char arguments[], struct act actBank[]) {
   int i = 0;
@@ -284,4 +293,28 @@ int addAct(int actUsed, char arguments[], struct act actBank[]) {
     for (i = 0; i < actUsed; ++i)
       printf("%s\n", actBank[i].activity);
   return ++actUsed;
+}
+
+
+int* sortElements(int tasksUsed, int *IDs, struct task taskBank[]){
+  int jar, i, h, holder;
+
+  for(i=1; i < tasksUsed-1; ++i){
+    h = i - 1;
+    jar = i;
+    while(h >= 0 && (strcmp(taskBank[IDs[jar]].desc, taskBank[IDs[h]].desc) < 0)){
+        holder = IDs[jar];
+        IDs[jar] = IDs[h];
+        IDs[h] = holder;
+        --jar;
+        --h;
+      }
+  }
+  return IDs;
+}
+
+int eval(char c){
+  if(c == 't' || c == 'l' || c == 'n' || c == 'u' || c == 'm' || c == 'd' || c == 'a')
+    return 1;
+  return 0;
 }
