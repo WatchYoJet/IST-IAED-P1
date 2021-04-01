@@ -9,7 +9,7 @@
 /*---------------------------Defines---------------------------------*/
 
 #define DESCMAX 50
-#define USERMAX 20
+#define USERMAX 20 + 1
 #define CARMAX 20 + 1
 #define ACTMAX 10
 #define MAXINPUT 38885 /*5 + 4*899 + 3*899 + 2*89 + 9*/
