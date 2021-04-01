@@ -41,11 +41,11 @@ int addTask(int id, char arguments[], struct task taskBank[]);
 void taskList(int id, struct task taskBank[], char arguments[]);
 int timeForward(char arguments[], int time, int id, struct task taskBank[]);
 int addUser(char arguments[], struct user userBank[], int userUsed);
-void moveTask(int tasksUsed, struct task taskBank[], struct user userBank[], 
-              char arguments[], struct act actBank[]);
+void moveTask(int tasksUsed, struct task taskBank[], struct user userBank[],
+  char arguments[], struct act actBank[]);
 void actList(char arguments[], struct act actBank[], struct task taskBank[]);
 int addAct(int actUsed, char arguments[], struct act actBank[]);
-int* sortElements(int tasksUsed, int *IDs, struct task taskBank[]);
+int * sortElements(int tasksUsed, int * IDs, struct task taskBank[], int isDesc);
 
 /*----------------------------Main-----------------------------------*/
 
@@ -117,19 +117,18 @@ int addTask(int id, char arguments[], struct task taskBank[]) {
 }
 
 void taskList(int id, struct task taskBank[], char arguments[]) {
-  int  i = 0, inputid, j, reset, toSort[TASKMAX], *sorted;
+  int i = 0, inputid, j, reset, toSort[TASKMAX], * sorted;
   char jar[MAXINPUT], numstr[5], pote[5];
 
   strcpy(jar, arguments);
-  if (jar[0] == '\n'){
+  if (jar[0] == '\n') {
     for (i = 0; i < id - 1; ++i)
       toSort[i] = i;
-    sorted = sortElements(id, toSort, taskBank);
+    sorted = sortElements(id, toSort, taskBank, 1);
     for (i = 0; i < id - 1; ++i)
       printf("%d %s #%d %s\n", taskBank[sorted[i]].id, taskBank[sorted[i]].act,
         taskBank[sorted[i]].timeRequested, taskBank[sorted[i]].desc);
-  }
-  else {
+  } else {
     while (jar[i] != '\n') {
       if ((jar[i] != ' ') && (jar[i] != '\t')) {
         pote[0] = jar[i];
@@ -171,15 +170,15 @@ int timeForward(char arguments[], int time, int id, struct task taskBank[]) {
 }
 
 int addUser(char username[], struct user userBank[], int userUsed) {
-  int i=0;
+  int i = 0;
   char jar[USERMAX];
 
   if (username[0] != '\n') {
     while (username[i] != '\n') {
-    if (i != 0)
-      jar[i - 1] = username[i];
-    ++i;
-  }
+      if (i != 0)
+        jar[i - 1] = username[i];
+      ++i;
+    }
     jar[i - 1] = '\0';
     for (i = 0; i < DIFFUSERMAX; ++i)
       if (!strcmp(userBank[i].username, jar)) {
@@ -192,8 +191,7 @@ int addUser(char username[], struct user userBank[], int userUsed) {
     }
     strcpy(userBank[userUsed].username, jar);
     return ++userUsed;
-  } 
-  else {
+  } else {
     if (userUsed != 0)
       for (i = 0; i < userUsed; ++i)
         printf("%s\n", userBank[i].username);
@@ -241,8 +239,8 @@ void moveTask(int tasksUsed, struct task taskBank[], struct user userBank[],
 }
 
 void actList(char arguments[], struct act actBank[], struct task taskBank[]) {
-  int i = 0, result = 1, j, h, sameAct[TASKMAX];
-  char jar[CARMAX], sameTime[TASKMAX];
+  int i = 0, result = 1, j = 0, h[TASKMAX], *sorted, count, pote[TASKMAX];
+  char jar[CARMAX];
 
   while (arguments[i] != '\n') {
     if (i != 0)
@@ -251,21 +249,24 @@ void actList(char arguments[], struct act actBank[], struct task taskBank[]) {
   }
   jar[i - 1] = '\0';
 
-  for (i = 0; i < CARMAX; ++i)
-    if (!strcmp(jar, actBank[i].activity)) {
-      h = i;
-      result = 0;
-    }
-  i = 0;
-  for (j = 0; j < TASKMAX; j++){
-    if (!strcmp(taskBank[j].act, actBank[h].activity)){
-      sameAct[i] = j;
-      ++i;
-    }
-  }
-
   if (result)
     printf("no such activity\n");
+  else{
+    for (i = 0; i < TASKMAX; ++i)
+      if (!strcmp(jar, taskBank[i].act)) {
+        h[j] = i;
+        ++j;
+      }
+    if (j != 0){
+      sorted = sortElements(j, h, taskBank, 0);
+      for (i = 0; i < j; ++i){
+        pote[0] = i;
+        for (count = i; count < j && pote[0] == sorted[i]; ++count){
+          pote
+        }
+      }
+    }
+  }
 }
 
 int addAct(int actUsed, char arguments[], struct act actBank[]) {
@@ -281,8 +282,8 @@ int addAct(int actUsed, char arguments[], struct act actBank[]) {
       if (i != 0)
         jar[i - 1] = arguments[i];
       ++i;
-  }
-    jar[i-1] = '\0';
+    }
+    jar[i - 1] = '\0';
     i = 0;
     while (jar[i] != '\0') {
       if (!((jar[i] >= 'A' && jar[i] <= 'Z') || jar[i] != ' ' || jar[i] != '\t')) {
@@ -304,25 +305,35 @@ int addAct(int actUsed, char arguments[], struct act actBank[]) {
   return actUsed;
 }
 
-int* sortElements(int tasksUsed, int *IDs, struct task taskBank[]){
+int * sortElements(int tasksUsed, int * IDs, struct task taskBank[], int isDesc) {
   int jar, i, h, holder;
 
-  for(i=1; i < tasksUsed-1; ++i){
+  for (i = 1; i < tasksUsed - 1; ++i) {
     h = i - 1;
     jar = i;
-    while(h >= 0 && (strcmp(taskBank[IDs[jar]].desc, taskBank[IDs[h]].desc) < 0)){
+    if (isDesc) {
+      while (h >= 0 && (strcmp(taskBank[IDs[jar]].desc, taskBank[IDs[h]].desc) < 0)) {
         holder = IDs[jar];
         IDs[jar] = IDs[h];
         IDs[h] = holder;
         --jar;
         --h;
       }
+    } else {
+      while (h >= 0 && taskBank[IDs[jar]].t0 < taskBank[IDs[h]].t0) {
+        holder = IDs[jar];
+        IDs[jar] = IDs[h];
+        IDs[h] = holder;
+        --jar;
+        --h;
+      }
+    }
   }
   return IDs;
 }
 
-int eval(char c){
-  if(c == 't' || c == 'l' || c == 'n' || c == 'u' || c == 'm' || c == 'd' || c == 'a')
+int eval(char c) {
+  if (c == 't' || c == 'l' || c == 'n' || c == 'u' || c == 'm' || c == 'd' || c == 'a')
     return 1;
   return 0;
 }
