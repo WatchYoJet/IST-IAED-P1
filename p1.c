@@ -277,7 +277,7 @@ int addAct(int actUsed, char arguments[], struct act actBank[]) {
     jar[i] = '\0';
     i = 0;
     while (jar[i] != '\0') {
-      if (!((jar[i] >= 'A' && jar[i] <= 'Z') || jar[i] == ' ' || jar[i] == '\t')) {
+      if (!((jar[i] >= 'A' && jar[i] <= 'Z') || !(jar[i] == ' ') || !(jar[i] == '\t'))) {
         printf("invalid description\n");
         return actUsed;
       }
@@ -294,7 +294,6 @@ int addAct(int actUsed, char arguments[], struct act actBank[]) {
       printf("%s\n", actBank[i].activity);
   return ++actUsed;
 }
-
 
 int* sortElements(int tasksUsed, int *IDs, struct task taskBank[]){
   int jar, i, h, holder;
