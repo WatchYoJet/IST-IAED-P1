@@ -12,7 +12,7 @@
 #define USERMAX 20 + 1
 #define CARMAX 20 + 1
 #define ACTMAX 10
-#define MAXINPUT 38885 /*5 + 4*899 + 3*899 + 2*89 + 9*/
+#define MAXINPUT 38885 + 2 /*5 + 4*899 + 3*899 + 2*89 + 9*/
 #define TASKMAX 10000
 #define DIFFUSERMAX 50
 
@@ -26,6 +26,8 @@ struct task {
   int t0; /*O instante no qual a ativdade foi começada */
 };
 
+struct task taskBank[TASKMAX];
+
 struct user {
   char username[USERMAX];
 };
@@ -37,22 +39,21 @@ struct act {
 /*---------------------------Functions-------------------------------*/
 
 int eval(char c);
-int addTask(int id, char arguments[], struct task taskBank[]);
-void taskList(int id, struct task taskBank[], char arguments[]);
-int timeForward(char arguments[], int time, int id, struct task taskBank[]);
+int addTask(int id, char arguments[]);
+void taskList(int id, char arguments[]);
+int timeForward(char arguments[], int time, int id);
 int addUser(char arguments[], struct user userBank[], int userUsed);
-void moveTask(int tasksUsed, struct task taskBank[], struct user userBank[],
+void moveTask(int tasksUsed, struct user userBank[],
   char arguments[], struct act actBank[]);
-void actList(char arguments[], struct act actBank[], struct task taskBank[]);
+void actList(char arguments[]);
 int addAct(int actUsed, char arguments[], struct act actBank[]);
-int * sortElements(int tasksUsed, int * IDs, struct task taskBank[], int isDesc);
+int * sortElements(int tasksUsed, int * IDs, int isDesc);
 
 /*----------------------------Main-----------------------------------*/
 
 int main() {
   char command, arguments[MAXINPUT];
   int tasksUsed = 1, time = 0, userUsed = 0, actUsed = 3;
-  struct task taskBank[TASKMAX];
   struct user userBank[DIFFUSERMAX];
   struct act actBank[ACTMAX];
 
@@ -61,26 +62,26 @@ int main() {
   strcpy(actBank[2].activity, "DONE");
 
   while ((command = getchar()) != 'q') {
-    fgets(arguments, MAXINPUT + 2, stdin);
+    fgets(arguments, MAXINPUT, stdin);
     if (eval(command))
       switch (command) {
       case 't':
-        tasksUsed = addTask(tasksUsed, arguments, taskBank);
+        tasksUsed = addTask(tasksUsed, arguments);
         break;
       case 'l':
-        taskList(tasksUsed, taskBank, arguments);
+        taskList(tasksUsed, arguments);
         break;
       case 'n':
-        time = timeForward(arguments, time, tasksUsed, taskBank);
+        time = timeForward(arguments, time, tasksUsed);
         break;
       case 'u':
         userUsed = addUser(arguments, userBank, userUsed);
         break;
       case 'm':
-        moveTask(tasksUsed, taskBank, userBank, arguments, actBank);
+        moveTask(tasksUsed, userBank, arguments, actBank);
         break;
       case 'd':
-        actList(arguments, actBank, taskBank);
+        actList(arguments);
         break;
       case 'a':
         actUsed = addAct(actUsed, arguments, actBank);
@@ -92,7 +93,7 @@ int main() {
   return 0;
 }
 
-int addTask(int id, char arguments[], struct task taskBank[]) {
+int addTask(int id, char arguments[]) {
   char descript[DESCMAX];
   int time, i, val = 0;
 
@@ -116,7 +117,7 @@ int addTask(int id, char arguments[], struct task taskBank[]) {
   return ++id;
 }
 
-void taskList(int id, struct task taskBank[], char arguments[]) {
+void taskList(int id, char arguments[]) {
   int i = 0, inputid, j, reset, toSort[TASKMAX], * sorted;
   char jar[MAXINPUT], numstr[5], pote[5];
 
@@ -124,7 +125,7 @@ void taskList(int id, struct task taskBank[], char arguments[]) {
   if (jar[0] == '\n') {
     for (i = 0; i < id - 1; ++i)
       toSort[i] = i;
-    sorted = sortElements(id, toSort, taskBank, 1);
+    sorted = sortElements(id, toSort, 1);
     for (i = 0; i < id - 1; ++i)
       printf("%d %s #%d %s\n", taskBank[sorted[i]].id, taskBank[sorted[i]].act,
         taskBank[sorted[i]].timeRequested, taskBank[sorted[i]].desc);
@@ -155,7 +156,7 @@ void taskList(int id, struct task taskBank[], char arguments[]) {
   }
 }
 
-int timeForward(char arguments[], int time, int id, struct task taskBank[]) {
+int timeForward(char arguments[], int time, int id) {
   int tint, i;
 
   sscanf(arguments, "%d", & tint);
@@ -199,7 +200,7 @@ int addUser(char username[], struct user userBank[], int userUsed) {
   }
 }
 
-void moveTask(int tasksUsed, struct task taskBank[], struct user userBank[],
+void moveTask(int tasksUsed, struct user userBank[],
   char arguments[], struct act actBank[]) {
 
   int idRequested, val = 1, i, j = 0, h = 0;
@@ -238,8 +239,8 @@ void moveTask(int tasksUsed, struct task taskBank[], struct user userBank[],
   }
 }
 
-void actList(char arguments[], struct act actBank[], struct task taskBank[]) {
-  int i = 0, result = 1, j = 0, h[TASKMAX], *sorted, count, pote[TASKMAX];
+void actList(char arguments[]) {
+  int i = 0, result = 0, j = 0, h[TASKMAX], *sorted, count = 0, pote[TASKMAX], printter;
   char jar[CARMAX];
 
   while (arguments[i] != '\n') {
@@ -258,12 +259,15 @@ void actList(char arguments[], struct act actBank[], struct task taskBank[]) {
         ++j;
       }
     if (j != 0){
-      sorted = sortElements(j, h, taskBank, 0);
+      sorted = sortElements(j, h, 0);
       for (i = 0; i < j; ++i){
         pote[0] = i;
-        for (count = i; count < j && pote[0] == sorted[i]; ++count){
-          pote
+        for (count = i+1; count < j && pote[0] == sorted[count]; ++count){
+          pote[count] = sorted[count];
         }
+        i += count;
+        for (printter = 0; printter < count; ++count)
+          printf("%d",taskBank[sorted[printter]].t0);
       }
     }
   }
@@ -305,7 +309,7 @@ int addAct(int actUsed, char arguments[], struct act actBank[]) {
   return actUsed;
 }
 
-int * sortElements(int tasksUsed, int * IDs, struct task taskBank[], int isDesc) {
+int * sortElements(int tasksUsed, int * IDs, int isDesc) {
   int jar, i, h, holder;
 
   for (i = 1; i < tasksUsed - 1; ++i) {
