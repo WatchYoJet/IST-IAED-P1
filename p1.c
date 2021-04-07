@@ -262,12 +262,15 @@ void actList(char arguments[]) {
       sorted = sortElements(j, h, 0);
       for (i = 0; i < j; ++i){
         pote[0] = i;
-        for (count = i+1; count < j && pote[0] == sorted[count]; ++count){
-          pote[count] = sorted[count];
+        for (count = i+1; count < j; ++count){
+          if (pote[0] == sorted[count])
+            pote[count] = sorted[count];
         }
         i += count;
-        for (printter = 0; printter < count; ++count)
-          printf("%d",taskBank[sorted[printter]].t0);
+        for (printter = 0; printter < count; ++printter)
+          if (taskBank[sorted[printter]].started)
+            printf("%d %d %s\n",taskBank[sorted[printter]].id,
+            taskBank[sorted[printter]].t0, taskBank[sorted[printter]].desc);
       }
     }
   }
@@ -324,7 +327,7 @@ int * sortElements(int tasksUsed, int * IDs, int isDesc) {
         --h;
       }
     } else {
-      while (h >= 0 && taskBank[IDs[jar]].t0 < taskBank[IDs[h]].t0) {
+      while (h >= 0 && taskBank[IDs[jar]].t0 > taskBank[IDs[h]].t0) {
         holder = IDs[jar];
         IDs[jar] = IDs[h];
         IDs[h] = holder;
