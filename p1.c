@@ -16,11 +16,6 @@
 #define TASKMAX 10000
 #define DIFFUSERMAX 50
 
-/*5 + 4*899 + 3*899 + 2*89 + 9*/
-/*5 + 4*899 + 3*899 + 2*89 + 9*//*5 + 4*899 + 3*899 + 2*89 + 9*/
-/*5 + 4*899 + 3*899 + 2*89 + 9*//*5 + 4*899 + 3*899 + 2*89 + 9*/
-/*5 + 4*899 + 3*899 + 2*89 + 9*//*5 + 4*899 + 3*899 + 2*89 + 9*/
-
 struct task {
   int started;
   int id; /*O ID da tarefa, int de 1 a 10000 */
@@ -106,13 +101,16 @@ int addTask(int id, char arguments[]) {
   for (i = 0; i < id; ++i)
     if (!strcmp(taskBank[i].desc, descript))
       val = 1;
-  if (val) {
-    printf("duplicate description\n");
-    return id;
-  } else if (id > TASKMAX) {
+  if (id > TASKMAX) {
     printf("too many tasks\n");
     return id;
-  } else {
+  } else if (val) {
+    printf("duplicate description\n");
+    return id;
+  } else if( time <= 0){
+    printf("invalid duration\n");
+    return id;
+  }else {
     taskBank[id - 1].id = id;
     taskBank[id - 1].timeRequested = time;
     strcpy(taskBank[id - 1].act, "TO DO");
@@ -298,10 +296,11 @@ int addAct(int actUsed, char arguments[], struct act actBank[]) {
     jar[i - 1] = '\0';
     i = 0;
     while (jar[i] != '\0') {
-      if (!((jar[i] >= 'A' && jar[i] <= 'Z') || jar[i] != ' ' || jar[i] != '\t')) {
+      if ((!(jar[i] >= 'A' && jar[i] <= 'Z') || jar[i] != ' ' || jar[i] != '\t')) {
         printf("invalid description\n");
         return actUsed;
       }
+      printf("fuck\n");
       ++i;
     }
     for (i = 0; i < ACTMAX; ++i)
