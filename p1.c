@@ -227,7 +227,7 @@ void moveTask(int tasksUsed, struct user userBank[],
     if (!strcmp(actBank[i].activity, actRequested))
       ++h;
 
-  if (idRequested >= tasksUsed) {
+  if (idRequested >= tasksUsed || idRequested <= 0) {
     printf("no such task\n");
     val = 0;
   } else if (!strcmp(actRequested, "TO DO") && strcmp(taskBank[idRequested-1].act, "TO DO")) {
@@ -238,8 +238,9 @@ void moveTask(int tasksUsed, struct user userBank[],
   else if (!h)
     printf("no such activity\n");
 
-  if (j && h && val) {
+  if (j && h && val && strcmp(actRequested,taskBank[idRequested - 1].act)) {
     if (!strcmp(actRequested, "DONE")) {
+      taskBank[idRequested - 1].started = 0;
       printf("duration=%d slack=%d\n", taskBank[idRequested - 1].t0,
         taskBank[idRequested - 1].t0 - taskBank[idRequested - 1].timeRequested);
       strcpy(taskBank[idRequested - 1].act, "DONE");
