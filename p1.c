@@ -174,16 +174,22 @@ int timeForward(char arguments[], int time, int id) {
 }
 
 int addUser(char username[], struct user userBank[], int userUsed) {
-  int i = 0;
+  int i = 0, count = 0, j = 0;
   char jar[USERMAX];
 
   if (username[0] != '\n') {
+    while (username[count] == ' ' || username[count] == '\t'){
+        ++count;
+    }
     while (username[i] != '\n') {
-      if (i != 0)
-        jar[i - 1] = username[i];
+      if (i >= count){
+        jar[j] = username[i];
+        j += 1;
+      }
       ++i;
     }
-    jar[i - 1] = '\0';
+    jar[j+1] = '\0';
+    
     for (i = 0; i < DIFFUSERMAX; ++i)
       if (!strcmp(userBank[i].username, jar)) {
         printf("user already exists\n");
