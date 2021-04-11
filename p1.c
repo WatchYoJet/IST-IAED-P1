@@ -227,7 +227,7 @@ void moveTask(int tasksUsed, struct user userBank[],
   if (idRequested >= tasksUsed) {
     printf("no such task\n");
     val = 0;
-  } else if (!strcmp(actRequested, "TO DO")) {
+  } else if (!strcmp(actRequested, "TO DO") && strcmp(taskBank[idRequested-1].act, "TO DO")) {
     printf("task already started\n");
     val = 0;
   } else if (!j)
