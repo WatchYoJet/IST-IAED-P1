@@ -24,6 +24,7 @@ struct task {
   char act[CARMAX]; /*A atividade na qual a tarefa está. String de 20 caracters com espaços */
   int timeRequested; /*O tempo estimado para a atividade ser completada */
   int t0; /*O instante no qual a ativdade foi começada */
+  int timeToStart;
 };
 
 struct task taskBank[TASKMAX];
@@ -168,6 +169,8 @@ int timeForward(char arguments[], int time, int id) {
     for (i = 0; i < id; ++i)
       if (taskBank[i].started)
         taskBank[i].t0 += tint;
+      else
+        taskBank[i].timeToStart += tint;
   } else
     printf("invalid time\n");
   return time;
@@ -276,9 +279,8 @@ void actList(char arguments[]) {
         }
         i += count;
         for (printter = 0; printter < count; ++printter)
-          if (taskBank[sorted[printter]].started)
             printf("%d %d %s\n", taskBank[sorted[printter]].id,
-              taskBank[sorted[printter]].t0, taskBank[sorted[printter]].desc);
+              taskBank[sorted[printter]].timeToStart, taskBank[sorted[printter]].desc);
       }
     }
   }
