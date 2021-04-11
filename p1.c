@@ -107,10 +107,10 @@ int addTask(int id, char arguments[]) {
   } else if (val) {
     printf("duplicate description\n");
     return id;
-  } else if( time <= 0){
+  } else if (time <= 0) {
     printf("invalid duration\n");
     return id;
-  }else {
+  } else {
     taskBank[id - 1].id = id;
     taskBank[id - 1].timeRequested = time;
     strcpy(taskBank[id - 1].act, "TO DO");
@@ -178,18 +178,18 @@ int addUser(char username[], struct user userBank[], int userUsed) {
   char jar[USERMAX];
 
   if (username[0] != '\n') {
-    while (username[count] == ' ' || username[count] == '\t'){
-        ++count;
+    while (username[count] == ' ' || username[count] == '\t') {
+      ++count;
     }
     while (username[i] != '\n') {
-      if (i >= count){
+      if (i >= count) {
         jar[j] = username[i];
         j += 1;
       }
       ++i;
     }
-    jar[j+1] = '\0';
-    
+    jar[j] = '\0';
+
     for (i = 0; i < DIFFUSERMAX; ++i)
       if (!strcmp(userBank[i].username, jar)) {
         printf("user already exists\n");
@@ -223,18 +223,17 @@ void moveTask(int tasksUsed, struct user userBank[],
   for (i = 0; i < ACTMAX; ++i)
     if (!strcmp(actBank[i].activity, actRequested))
       ++h;
-    
-  if (!j)
-    printf("no such user\n");
-  else if (!h)
-    printf("no such activity\n");
-  else if (idRequested >= tasksUsed) {
+
+  if (idRequested >= tasksUsed) {
     printf("no such task\n");
     val = 0;
   } else if (!strcmp(actRequested, "TO DO")) {
     printf("task already started\n");
     val = 0;
-  }
+  } else if (!j)
+    printf("no such user\n");
+  else if (!h)
+    printf("no such activity\n");
 
   if (j && h && val) {
     if (!strcmp(actRequested, "DONE")) {
@@ -249,7 +248,7 @@ void moveTask(int tasksUsed, struct user userBank[],
 }
 
 void actList(char arguments[]) {
-  int i = 0, result = 0, j = 0, h[TASKMAX], *sorted, count = 0, pote[TASKMAX], printter;
+  int i = 0, result = 0, j = 0, h[TASKMAX], * sorted, count = 0, pote[TASKMAX], printter;
   char jar[CARMAX];
 
   while (arguments[i] != '\n') {
@@ -261,25 +260,25 @@ void actList(char arguments[]) {
 
   if (result)
     printf("no such activity\n");
-  else{
+  else {
     for (i = 0; i < TASKMAX; ++i)
       if (!strcmp(jar, taskBank[i].act)) {
         h[j] = i;
         ++j;
       }
-    if (j != 0){
+    if (j != 0) {
       sorted = sortElements(j, h, 0);
-      for (i = 0; i < j; ++i){
+      for (i = 0; i < j; ++i) {
         pote[0] = i;
-        for (count = i+1; count < j; ++count){
+        for (count = i + 1; count < j; ++count) {
           if (pote[0] == sorted[count])
             pote[count] = sorted[count];
         }
         i += count;
         for (printter = 0; printter < count; ++printter)
           if (taskBank[sorted[printter]].started)
-            printf("%d %d %s\n",taskBank[sorted[printter]].id,
-            taskBank[sorted[printter]].t0, taskBank[sorted[printter]].desc);
+            printf("%d %d %s\n", taskBank[sorted[printter]].id,
+              taskBank[sorted[printter]].t0, taskBank[sorted[printter]].desc);
       }
     }
   }
