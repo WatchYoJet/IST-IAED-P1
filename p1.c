@@ -214,15 +214,15 @@ void moveTask(int tasksUsed, struct user userBank[],
   for (i = 0; i < DIFFUSERMAX; ++i)
     if (!strcmp(userBank[i].username, userRequested))
       ++j;
-  if (!j)
-    printf("no such user\n");
   for (i = 0; i < ACTMAX; ++i)
     if (!strcmp(actBank[i].activity, actRequested))
       ++h;
-  if (!h)
+    
+  if (!j)
+    printf("no such user\n");
+  else if (!h)
     printf("no such activity\n");
-
-  if (idRequested >= tasksUsed) {
+  else if (idRequested >= tasksUsed) {
     printf("no such task\n");
     val = 0;
   } else if (!strcmp(actRequested, "TO DO")) {
@@ -296,11 +296,10 @@ int addAct(int actUsed, char arguments[], struct act actBank[]) {
     jar[i - 1] = '\0';
     i = 0;
     while (jar[i] != '\0') {
-      if ((!(jar[i] >= 'A' && jar[i] <= 'Z') || jar[i] != ' ' || jar[i] != '\t')) {
+      if (jar[i] >= 'a' && jar[i] <= 'z') {
         printf("invalid description\n");
         return actUsed;
       }
-      printf("fuck\n");
       ++i;
     }
     for (i = 0; i < ACTMAX; ++i)
