@@ -236,14 +236,17 @@ void moveTask(int tasksUsed, struct user userBank[],
 
   if (j && h && val) {
     if (!strcmp(actRequested, "DONE")) {
+      taskBank[idRequested - 1].started = 0;
       printf("duration=%d slack=%d\n", time - taskBank[idRequested - 1].timePostStart,
         time - taskBank[idRequested - 1].timePostStart - taskBank[idRequested - 1].timeRequested);
       strcpy(taskBank[idRequested - 1].act, "DONE");
     } else {
+      if (!strcmp(taskBank[idRequested-1].act, "TO DO")){
+        printf("fuck\n");
+        taskBank[idRequested-1].timePostStart = time;
+      }
       strcpy(taskBank[idRequested - 1].act, actRequested);
       taskBank[idRequested - 1].started = 1;
-      if (!strcmp(taskBank[idRequested-1].act, "TO DO")) 
-        taskBank[idRequested-1].timePostStart = time;
     }
   }
 }
@@ -272,7 +275,7 @@ void actList(char arguments[], struct act actBank[ACTMAX]) {
         ++j;
       }
     if (j != 0) {
-      sorted = sortElements(j, h, 0);
+      sorted = sortElements(j, h, 1);
       for (i = 0; i < j; ++i) {
         pote[0] = i;
         for (count = i + 1; count < j; ++count) {
