@@ -330,7 +330,7 @@ int addAct(int actUsed, char arguments[], struct act actBank[]) {
 int * sortElements(int tasksUsed, int * IDs, int isDesc) {
   int jar, i, h, holder;
 
-  for (i = 1; i < tasksUsed; ++i) {
+  for (i = 1; i < tasksUsed-1; ++i) {
     h = i - 1;
     jar = i;
     if (isDesc) {
