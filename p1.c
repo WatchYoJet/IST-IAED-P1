@@ -146,7 +146,7 @@ void taskList(int id, char arguments[]) {
         strcpy(numstr, pote);
         inputid = atoi(numstr);
         --inputid;
-        if (!taskBank[inputid].id)
+        if (!taskBank[inputid].id || inputid < 0)
           printf("%d: no such task\n", inputid + 1);
         else
           printf("%d %s #%d %s\n", taskBank[inputid].id, taskBank[inputid].act,
@@ -252,7 +252,7 @@ void moveTask(int tasksUsed, struct user userBank[],
 }
 
 void actList(char arguments[], struct act actBank[ACTMAX]) {
-  int i = 0, result = 1, j = 0, h[TASKMAX], * sorted, count = 0, pote[TASKMAX], printter;
+  int i = 0, result = 1, j = 0, h[TASKMAX], * sortedint, count = 0, pote[TASKMAX], printter, * sortedDesc;
   char jar[CARMAX];
 
   while (arguments[i] != '\n') {
@@ -275,17 +275,17 @@ void actList(char arguments[], struct act actBank[ACTMAX]) {
         ++j;
       }
     if (j != 0) {
-      sorted = sortElements(j, h, 0);
-      for (i = 0; i < j; ++i) {
-        pote[0] = i;
-        for (count = i + 1; count < j; ++count) {
-          if (pote[0] == sorted[count])
-            pote[count] = sorted[count];
+      sortedint = sortElements(j, h, 0);
+      for (i = 0; i < j; ++i) { /* dentro do sortedint vamos percorrer cada elemento*/
+        pote[0] = sortedint[i];
+        for (count = i + 1; count < j && taskBank[pote[0]].timePostStart == taskBank[sortedint[count]].timePostStart; ++count) {
+            pote[count] = sortedint[count];
         }
         i += count;
+        sortedDesc = sortElements(count, sortedint, 1);
         for (printter = 0; printter < count; ++printter)
-            printf("%d %d %s\n", taskBank[sorted[printter]].id,
-              taskBank[sorted[printter]].timePostStart, taskBank[sorted[printter]].desc);
+            printf("%d %d %s\n", taskBank[sortedDesc[printter]].id,
+              taskBank[sortedDesc[printter]].timePostStart, taskBank[sortedDesc[printter]].desc);
       }
     }
   }
