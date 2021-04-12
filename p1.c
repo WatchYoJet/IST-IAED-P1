@@ -252,7 +252,7 @@ void moveTask(int tasksUsed, struct user userBank[],
 }
 
 void actList(char arguments[], struct act actBank[ACTMAX]) {
-  int i = 0, result = 1, j = 0, h[TASKMAX], * sortedint, count = 0, pote[TASKMAX], printter, * sortedDesc;
+  int i = 0, result = 1, j = 0, h[TASKMAX], * sortedint, count = 0, pote[TASKMAX], printer, * sortedDesc, z;
   char jar[CARMAX];
 
   while (arguments[i] != '\n') {
@@ -278,14 +278,16 @@ void actList(char arguments[], struct act actBank[ACTMAX]) {
       sortedint = sortElements(j, h, 0);
       for (i = 0; i < j; ++i) { /* dentro do sortedint vamos percorrer cada elemento*/
         pote[0] = sortedint[i];
+        z = 1;
         for (count = i + 1; count < j && taskBank[pote[0]].timePostStart == taskBank[sortedint[count]].timePostStart; ++count) {
-            pote[count] = sortedint[count];
+            pote[z] = sortedint[count];
+            ++z;
         }
-        i += count;
-        sortedDesc = sortElements(count, sortedint, 1);
-        for (printter = 0; printter < count; ++printter)
-            printf("%d %d %s\n", taskBank[sortedDesc[printter]].id,
-              taskBank[sortedDesc[printter]].timePostStart, taskBank[sortedDesc[printter]].desc);
+        i += z;
+        sortedDesc = sortElements(z, pote, 1);
+        for (printer = 0; printer < z; ++printer)
+            printf("%d %d %s\n", taskBank[sortedDesc[printer]].id,
+              taskBank[sortedDesc[printer]].timePostStart, taskBank[sortedDesc[printer]].desc);
       }
     }
   }
