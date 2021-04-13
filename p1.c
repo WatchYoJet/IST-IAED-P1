@@ -48,7 +48,6 @@ void moveTask(int tasksUsed, struct user userBank[],
 void actList(char arguments[], struct act actBank[ACTMAX]);
 int addAct(int actUsed, char arguments[], struct act actBank[]);
 int * sortElements(int tasksUsed, int * IDs, int isDesc);
-int * shellSort(int tasksUsed , int * IDs, int isDesc);
 
 /*----------------------------Main-----------------------------------*/
 
@@ -276,7 +275,7 @@ void actList(char arguments[], struct act actBank[ACTMAX]) {
         ++j;
       }
     if (j != 0) {
-      sortedint = shellSort(j, h, 0);
+      sortedint = sortElements(j, h, 0);
       for (i = 0; i < j; ++i) { /* dentro do sortedint vamos percorrer cada elemento*/
         pote[0] = sortedint[i];
         z = 1;
@@ -355,23 +354,6 @@ int * sortElements(int tasksUsed, int * IDs, int isDesc) {
     }
   }
   return IDs;
-}
-
-int * shellSort(int tasksUsed , int * IDs, int isDesc){
-  int gap;
-  int i;
-  if (isDesc){
-    for (gap = tasksUsed/2; gap > 0; gap /= 2){
-        for (i= gap; i < tasksUsed; ++i){
-            int temp = IDs[i];
-            int j;            
-            for (j = i; j >= gap && IDs[j - gap] > temp; j -= gap)
-                IDs[j] = IDs[j - gap];
-            IDs[j] = temp;
-        }
-    }
-  }
-  return 0;
 }
 
 
