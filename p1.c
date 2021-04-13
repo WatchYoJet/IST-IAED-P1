@@ -18,11 +18,11 @@
 
 struct task {
   int started;
-  int id; /*O ID da tarefa, int de 1 a 10000 */
-  char desc[DESCMAX]; /*A descrição da tarefa, string de 50 caracteres com espaços*/
-  char user[USERMAX]; /*O utilizador da tarefa, string de 20 caracteres sem espaços */
-  char act[CARMAX]; /*A atividade na qual a tarefa está. String de 20 caracters com espaços */
-  int timeRequested; /*O tempo estimado para a atividade ser completada */
+  int id; 
+  char desc[DESCMAX]; 
+  char user[USERMAX]; 
+  char act[CARMAX]; 
+  int timeRequested; 
   int timePostStart;
 };
 
@@ -48,6 +48,7 @@ void moveTask(int tasksUsed, struct user userBank[],
 void actList(char arguments[], struct act actBank[ACTMAX]);
 int addAct(int actUsed, char arguments[], struct act actBank[]);
 int * sortElements(int tasksUsed, int * IDs, int isDesc);
+int * shellSort(int tasksUsed , int * IDs, int isDesc);
 
 /*----------------------------Main-----------------------------------*/
 
@@ -275,7 +276,7 @@ void actList(char arguments[], struct act actBank[ACTMAX]) {
         ++j;
       }
     if (j != 0) {
-      sortedint = sortElements(j, h, 0);
+      sortedint = shellSort(j, h, 0);
       for (i = 0; i < j; ++i) { /* dentro do sortedint vamos percorrer cada elemento*/
         pote[0] = sortedint[i];
         z = 1;
@@ -283,8 +284,8 @@ void actList(char arguments[], struct act actBank[ACTMAX]) {
             pote[z] = sortedint[count];
             ++z;
         }
-        i += z;
-        sortedDesc = sortElements(z, pote, 1);
+        i += z-1;
+        sortedDesc = sortElements(z+1, pote, 1);
         for (printer = 0; printer < z; ++printer)
             printf("%d %d %s\n", taskBank[sortedDesc[printer]].id,
               taskBank[sortedDesc[printer]].timePostStart, taskBank[sortedDesc[printer]].desc);
@@ -355,6 +356,24 @@ int * sortElements(int tasksUsed, int * IDs, int isDesc) {
   }
   return IDs;
 }
+
+int * shellSort(int tasksUsed , int * IDs, int isDesc){
+  int gap;
+  int i;
+  if (isDesc){
+    for (gap = tasksUsed/2; gap > 0; gap /= 2){
+        for (i= gap; i < tasksUsed; ++i){
+            int temp = IDs[i];
+            int j;            
+            for (j = i; j >= gap && IDs[j - gap] > temp; j -= gap)
+                IDs[j] = IDs[j - gap];
+            IDs[j] = temp;
+        }
+    }
+  }
+  return 0;
+}
+
 
 int eval(char c) {
   if (c == 't' || c == 'l' || c == 'n' || c == 'u' || c == 'm' || c == 'd' || c == 'a')
