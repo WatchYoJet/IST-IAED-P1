@@ -389,8 +389,8 @@ int partition(int IDs[], int leftLim, int rightLim) {
   int j = rightLim;
   int v = IDs[rightLim];
   while (i < j) {
-    while (less(IDs[++i], v, 1));
-    while (less(v, IDs[--j], 1))
+    while (strcmp(taskBank[IDs[++i]].desc, taskBank[v].desc) < 0);
+    while (strcmp(taskBank[v].desc, taskBank[IDs[--j]].desc) < 0)
       if (j == leftLim)
         break;
     if (i < j)
