@@ -48,6 +48,10 @@ void moveTask(int tasksUsed, struct user userBank[],
 void actList(char arguments[], struct act actBank[ACTMAX]);
 int addAct(int actUsed, char arguments[], struct act actBank[]);
 int * sortElements(int tasksUsed, int * IDs, int isDesc);
+void changingElems(int a[] , int i, int h);
+int partition(int IDs[], int leftLim, int rightLim);
+int less(int arg1, int arg2, int isDesc);
+void quicksort(int a[], int leftLim, int rightLim);
 
 /*----------------------------Main-----------------------------------*/
 
@@ -121,17 +125,17 @@ int addTask(int id, char arguments[]) {
 }
 
 void taskList(int id, char arguments[]) {
-  int i = 0, inputid, j, reset, toSort[TASKMAX], * sorted;
+  int i = 0, inputid, j, reset, toSort[TASKMAX];
   char jar[MAXINPUT], numstr[5], pote[5];
 
   strcpy(jar, arguments);
   if (jar[0] == '\n') {
     for (i = 0; i < id - 1; ++i)
       toSort[i] = i;
-    sorted = sortElements(id, toSort, 1);
+    quicksort(toSort, 0, id-1);
     for (i = 0; i < id - 1; ++i)
-      printf("%d %s #%d %s\n", taskBank[sorted[i]].id, taskBank[sorted[i]].act,
-        taskBank[sorted[i]].timeRequested, taskBank[sorted[i]].desc);
+      printf("%d %s #%d %s\n", taskBank[toSort[i]].id, taskBank[toSort[i]].act,
+        taskBank[toSort[i]].timeRequested, taskBank[toSort[i]].desc);
   } else {
     while (jar[i] != '\n') {
       if ((jar[i] != ' ') && (jar[i] != '\t')) {
@@ -214,14 +218,15 @@ void moveTask(int tasksUsed, struct user userBank[],
 
   sscanf(arguments, "%d %s %[^\n]", & idRequested, userRequested, actRequested);
 
+  if (!strcmp(actRequested, taskBank[idRequested-1].act)) return;
+
+
   for (i = 0; i < DIFFUSERMAX; ++i)
     if (!strcmp(userBank[i].username, userRequested))
       ++j;
   for (i = 0; i < ACTMAX; ++i)
     if (!strcmp(actBank[i].activity, actRequested))
       ++h;
-
-  if (!strcmp(actRequested, "TO DO") && !strcmp(taskBank[idRequested-1].act, "TO DO")) return;
 
   if (idRequested >= tasksUsed || idRequested <= 0) {
     printf("no such task\n");
@@ -276,10 +281,13 @@ void actList(char arguments[], struct act actBank[ACTMAX]) {
       }
     if (j != 0) {
       sortedint = sortElements(j, h, 0);
-      for (i = 0; i < j; ++i) { /* dentro do sortedint vamos percorrer cada elemento*/
+      for (i = 0; i < j; ++i) {
         pote[0] = sortedint[i];
         z = 1;
-        for (count = i + 1; count < j && taskBank[pote[0]].timePostStart == taskBank[sortedint[count]].timePostStart; ++count) {
+        for ( count = i + 1; count < j 
+              && taskBank[pote[0]].timePostStart == 
+              taskBank[sortedint[count]].timePostStart; ++count) {
+        
             pote[z] = sortedint[count];
             ++z;
         }
@@ -287,7 +295,8 @@ void actList(char arguments[], struct act actBank[ACTMAX]) {
         sortedDesc = sortElements(z+1, pote, 1);
         for (printer = 0; printer < z; ++printer)
             printf("%d %d %s\n", taskBank[sortedDesc[printer]].id,
-              taskBank[sortedDesc[printer]].timePostStart, taskBank[sortedDesc[printer]].desc);
+              taskBank[sortedDesc[printer]].timePostStart,
+              taskBank[sortedDesc[printer]].desc);
       }
     }
   }
@@ -329,6 +338,19 @@ int addAct(int actUsed, char arguments[], struct act actBank[]) {
   return actUsed;
 }
 
+void changingElems(int a[] , int i, int h){
+  int holder;
+  
+  holder = a[i];
+  a[i] = a[h];
+  a[h] = holder;
+}
+
+int less(int arg1, int arg2, int isDesc){
+  if (isDesc) return (strcmp(taskBank[arg1].desc, taskBank[arg2].desc) < 0);
+  else return (taskBank[arg1].timePostStart < taskBank[arg2].timePostStart);
+}
+
 int * sortElements(int tasksUsed, int * IDs, int isDesc) {
   int jar, i, h, holder;
 
@@ -336,7 +358,8 @@ int * sortElements(int tasksUsed, int * IDs, int isDesc) {
     h = i - 1;
     jar = i;
     if (isDesc) {
-      while (h >= 0 && (strcmp(taskBank[IDs[jar]].desc, taskBank[IDs[h]].desc) < 0)) {
+      while (h >= 0 
+      && (strcmp(taskBank[IDs[jar]].desc, taskBank[IDs[h]].desc) < 0)) {
         holder = IDs[jar];
         IDs[jar] = IDs[h];
         IDs[h] = holder;
@@ -344,7 +367,8 @@ int * sortElements(int tasksUsed, int * IDs, int isDesc) {
         --h;
       }
     } else {
-      while (h >= 0 && taskBank[IDs[jar]].timePostStart < taskBank[IDs[h]].timePostStart) {
+      while (h >= 0 
+      && taskBank[IDs[jar]].timePostStart < taskBank[IDs[h]].timePostStart) {
         holder = IDs[jar];
         IDs[jar] = IDs[h];
         IDs[h] = holder;
@@ -355,6 +379,35 @@ int * sortElements(int tasksUsed, int * IDs, int isDesc) {
   }
   return IDs;
 }
+
+int partition(int IDs[], int leftLim, int rightLim) {
+  /* 
+  nao e do less
+  nao e do changing
+  */ 
+  int i = leftLim-1;
+  int j = rightLim;
+  int v = IDs[rightLim];
+  while (i < j) {
+    while (less(IDs[++i], v, 1));
+    while (less(v, IDs[--j], 1))
+      if (j == leftLim)
+        break;
+    if (i < j)
+      changingElems(IDs, i, j);
+  }
+  changingElems(IDs, rightLim, i);
+  return i;
+}
+
+void quicksort(int a[], int leftLim, int rightLim) {
+  int i;
+  if (rightLim <= leftLim) return;
+  i = partition(a, leftLim, rightLim);
+  quicksort(a, leftLim, i-1);
+  quicksort(a, i+1, rightLim);
+}
+
 
 
 int eval(char c) {
