@@ -40,18 +40,18 @@ struct act {
 
 int eval(char c);
 int addTask(int id, char arguments[]);
-void taskList(int id, char arguments[]);
+void taskList(char arguments[], int tasksUsed);
 int timeForward(char arguments[], int time);
 int addUser(char arguments[], struct user userBank[], int userUsed);
 void moveTask(int tasksUsed, struct user userBank[],
-  char arguments[], struct act actBank[], int time);
+  char arguments[], struct act actBank[], int time, int userUsed, int actUsed);
 void actList(char arguments[], struct act actBank[ACTMAX]);
 int addAct(int actUsed, char arguments[], struct act actBank[]);
-int * sortElements(int tasksUsed, int * IDs, int isDesc);
+int * sortElements(int tasksUsed, int * IDs);
 void changingElems(int a[] , int i, int h);
-int partition(int IDs[], int leftLim, int rightLim);
+int partition(int IDs[], int leftLim, int rightLim, int isDesc);
 int less(int arg1, int arg2, int isDesc);
-void quicksort(int a[], int leftLim, int rightLim);
+void quicksort(int a[], int leftLim, int rightLim, int isDesc);
 
 /*----------------------------Main-----------------------------------*/
 
@@ -73,7 +73,7 @@ int main() {
         tasksUsed = addTask(tasksUsed, arguments);
         break;
       case 'l':
-        taskList(tasksUsed, arguments);
+        taskList(arguments, tasksUsed);
         break;
       case 'n':
         time = timeForward(arguments, time);
@@ -82,7 +82,7 @@ int main() {
         userUsed = addUser(arguments, userBank, userUsed);
         break;
       case 'm':
-        moveTask(tasksUsed, userBank, arguments, actBank, time);
+        moveTask(tasksUsed, userBank, arguments, actBank, time, userUsed, actUsed);
         break;
       case 'd':
         actList(arguments, actBank);
@@ -124,16 +124,16 @@ int addTask(int id, char arguments[]) {
   return ++id;
 }
 
-void taskList(int id, char arguments[]) {
+void taskList(char arguments[], int tasksUsed) {
   int i = 0, inputid, j, reset, toSort[TASKMAX];
   char jar[MAXINPUT], numstr[5], pote[5];
 
   strcpy(jar, arguments);
   if (jar[0] == '\n') {
-    for (i = 0; i < id - 1; ++i)
+    for (i = 0; i < tasksUsed - 1; ++i)
       toSort[i] = i;
-    quicksort(toSort, 0, id-1);
-    for (i = 0; i < id - 1; ++i)
+    quicksort(toSort, 0, tasksUsed-2, 1);
+    for (i = 0; i < tasksUsed - 1; ++i)
       printf("%d %s #%d %s\n", taskBank[toSort[i]].id, taskBank[toSort[i]].act,
         taskBank[toSort[i]].timeRequested, taskBank[toSort[i]].desc);
   } else {
@@ -191,7 +191,7 @@ int addUser(char username[], struct user userBank[], int userUsed) {
     }
     jar[j] = '\0';
 
-    for (i = 0; i < DIFFUSERMAX; ++i)
+    for (i = 0; i < userUsed; ++i)
       if (!strcmp(userBank[i].username, jar)) {
         printf("user already exists\n");
         return userUsed;
@@ -211,7 +211,7 @@ int addUser(char username[], struct user userBank[], int userUsed) {
 }
 
 void moveTask(int tasksUsed, struct user userBank[],
-  char arguments[], struct act actBank[], int time) {
+  char arguments[], struct act actBank[], int time, int userUsed, int actUsed) {
 
   int idRequested, val = 1, i, j = 0, h = 0;
   char userRequested[USERMAX], actRequested[CARMAX];
@@ -221,10 +221,10 @@ void moveTask(int tasksUsed, struct user userBank[],
   if (!strcmp(actRequested, taskBank[idRequested-1].act)) return;
 
 
-  for (i = 0; i < DIFFUSERMAX; ++i)
+  for (i = 0; i < userUsed; ++i)
     if (!strcmp(userBank[i].username, userRequested))
       ++j;
-  for (i = 0; i < ACTMAX; ++i)
+  for (i = 0; i < actUsed; ++i)
     if (!strcmp(actBank[i].activity, actRequested))
       ++h;
 
@@ -257,7 +257,7 @@ void moveTask(int tasksUsed, struct user userBank[],
 }
 
 void actList(char arguments[], struct act actBank[ACTMAX]) {
-  int i = 0, result = 1, j = 0, h[TASKMAX], * sortedint, count = 0, pote[TASKMAX], printer, * sortedDesc, z;
+  int i = 0, result = 1, j = 0, h[TASKMAX], count = 0, pote[TASKMAX], printer, * sortedDesc, z;
   char jar[CARMAX];
 
   while (arguments[i] != '\n') {
@@ -280,23 +280,19 @@ void actList(char arguments[], struct act actBank[ACTMAX]) {
         ++j;
       }
     if (j != 0) {
-      sortedint = sortElements(j, h, 0);
-      for (i = 0; i < j; ++i) {
-        pote[0] = sortedint[i];
+      quicksort(h, 0, j-1, 0);
+      for (i = 0; i < j; ++i) { /* dentro do sortedint vamos percorrer cada elemento*/
+        pote[0] = h[i];
         z = 1;
-        for ( count = i + 1; count < j 
-              && taskBank[pote[0]].timePostStart == 
-              taskBank[sortedint[count]].timePostStart; ++count) {
-        
-            pote[z] = sortedint[count];
+        for (count = i + 1; count < j && taskBank[pote[0]].timePostStart == taskBank[h[count]].timePostStart; ++count) {
+            pote[z] = h[count];
             ++z;
         }
         i += z-1;
-        sortedDesc = sortElements(z+1, pote, 1);
+        sortedDesc = sortElements(z+1, pote);
         for (printer = 0; printer < z; ++printer)
             printf("%d %d %s\n", taskBank[sortedDesc[printer]].id,
-              taskBank[sortedDesc[printer]].timePostStart,
-              taskBank[sortedDesc[printer]].desc);
+              taskBank[sortedDesc[printer]].timePostStart, taskBank[sortedDesc[printer]].desc);
       }
     }
   }
@@ -351,46 +347,31 @@ int less(int arg1, int arg2, int isDesc){
   else return (taskBank[arg1].timePostStart < taskBank[arg2].timePostStart);
 }
 
-int * sortElements(int tasksUsed, int * IDs, int isDesc) {
+int * sortElements(int tasksUsed, int * IDs) {
   int jar, i, h, holder;
 
   for (i = 1; i < tasksUsed-1; ++i) {
     h = i - 1;
     jar = i;
-    if (isDesc) {
-      while (h >= 0 
-      && (strcmp(taskBank[IDs[jar]].desc, taskBank[IDs[h]].desc) < 0)) {
-        holder = IDs[jar];
-        IDs[jar] = IDs[h];
-        IDs[h] = holder;
-        --jar;
-        --h;
-      }
-    } else {
-      while (h >= 0 
-      && taskBank[IDs[jar]].timePostStart < taskBank[IDs[h]].timePostStart) {
-        holder = IDs[jar];
-        IDs[jar] = IDs[h];
-        IDs[h] = holder;
-        --jar;
-        --h;
-      }
+    while (h >= 0 
+    && (strcmp(taskBank[IDs[jar]].desc, taskBank[IDs[h]].desc) < 0)) {
+      holder = IDs[jar];
+      IDs[jar] = IDs[h];
+      IDs[h] = holder;
+      --jar;
+      --h;
     }
   }
   return IDs;
 }
 
-int partition(int IDs[], int leftLim, int rightLim) {
-  /* 
-  nao e do less
-  nao e do changing
-  */ 
+int partition(int IDs[], int leftLim, int rightLim, int isDesc) {
   int i = leftLim-1;
   int j = rightLim;
   int v = IDs[rightLim];
   while (i < j) {
-    while (strcmp(taskBank[IDs[++i]].desc, taskBank[v].desc) < 0);
-    while (strcmp(taskBank[v].desc, taskBank[IDs[--j]].desc) < 0)
+    while (less(IDs[++i], v, isDesc));
+    while (less(v, IDs[--j], isDesc))
       if (j == leftLim)
         break;
     if (i < j)
@@ -400,14 +381,13 @@ int partition(int IDs[], int leftLim, int rightLim) {
   return i;
 }
 
-void quicksort(int a[], int leftLim, int rightLim) {
+void quicksort(int a[], int leftLim, int rightLim, int isDesc) {
   int i;
   if (rightLim <= leftLim) return;
-  i = partition(a, leftLim, rightLim);
-  quicksort(a, leftLim, i-1);
-  quicksort(a, i+1, rightLim);
+  i = partition(a, leftLim, rightLim, isDesc);
+  quicksort(a, leftLim, i-1, isDesc);
+  quicksort(a, i+1, rightLim, isDesc);
 }
-
 
 
 int eval(char c) {
