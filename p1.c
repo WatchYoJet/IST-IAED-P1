@@ -12,54 +12,55 @@
 #define USERMAX 20 + 1
 #define CARMAX 20 + 1
 #define ACTMAX 10
-#define MAXINPUT 388850 + 2 /*5 + 4*899 + 3*899 + 2*89 + 9*/
+#define MAXINPUT 419710
 #define TASKMAX 10000
 #define DIFFUSERMAX 50
 
-struct task {
+typedef struct{
   int started;
   int id; 
-  char desc[DESCMAX]; 
-  char user[USERMAX]; 
-  char act[CARMAX]; 
-  int timeRequested; 
+  char desc[DESCMAX];
+  char act[CARMAX];
+  int timeRequested;
   int timePostStart;
-};
+}task;
 
-struct task taskBank[TASKMAX];
-
-struct user {
+typedef struct {
   char username[USERMAX];
-};
+}user;
 
-struct act {
+typedef struct{
   char activity[CARMAX];
-};
+}act;
 
-/*---------------------------Functions-------------------------------*/
+/*---------------------------------Global-Vars--------------------------------*/
 
-int eval(char c);
+task taskBank[TASKMAX];
+
+
+/*--------------------------------Functions-----------------------------------*/
+
 int addTask(int id, char arguments[]);
 void taskList(char arguments[], int tasksUsed);
 int timeForward(char arguments[], int time);
-int addUser(char arguments[], struct user userBank[], int userUsed);
-void moveTask(int tasksUsed, struct user userBank[],
-  char arguments[], struct act actBank[], int time, int userUsed, int actUsed);
-void actList(char arguments[], struct act actBank[ACTMAX]);
-int addAct(int actUsed, char arguments[], struct act actBank[]);
+int addUser(char arguments[], user userBank[], int userUsed);
+void moveTask(int tasksUsed, user userBank[],
+  char arguments[], act actBank[], int time, int userUsed, int actUsed);
+void actList(char arguments[], act actBank[ACTMAX]);
+int addAct(int actUsed, char arguments[], act actBank[]);
 int * sortElements(int tasksUsed, int * IDs);
 void changingElems(int a[] , int i, int h);
 int partition(int IDs[], int leftLim, int rightLim, int isDesc);
 int less(int arg1, int arg2, int isDesc);
-void quicksort(int a[], int leftLim, int rightLim, int isDesc);
+void quicksort(int IDs[], int leftLim, int rightLim, int isDesc);
 
 /*----------------------------Main-----------------------------------*/
 
 int main() {
   char command, arguments[MAXINPUT];
   int tasksUsed = 1, time = 0, userUsed = 0, actUsed = 3;
-  struct user userBank[DIFFUSERMAX];
-  struct act actBank[ACTMAX];
+  user userBank[DIFFUSERMAX];
+  act actBank[ACTMAX];
 
   strcpy(actBank[0].activity, "TO DO");
   strcpy(actBank[1].activity, "IN PROGRESS");
@@ -67,32 +68,31 @@ int main() {
 
   while ((command = getchar()) != 'q') {
     fgets(arguments, MAXINPUT, stdin);
-    if (eval(command))
-      switch (command) {
-      case 't':
-        tasksUsed = addTask(tasksUsed, arguments);
-        break;
-      case 'l':
-        taskList(arguments, tasksUsed);
-        break;
-      case 'n':
-        time = timeForward(arguments, time);
-        break;
-      case 'u':
-        userUsed = addUser(arguments, userBank, userUsed);
-        break;
-      case 'm':
-        moveTask(tasksUsed, userBank, arguments, actBank, time, userUsed, actUsed);
-        break;
-      case 'd':
-        actList(arguments, actBank);
-        break;
-      case 'a':
-        actUsed = addAct(actUsed, arguments, actBank);
-        break;
-      }
-    else
-      printf("ups!\n");
+    switch (command) {
+    case 't':
+      tasksUsed = addTask(tasksUsed, arguments);
+      break;
+    case 'l':
+      taskList(arguments, tasksUsed);
+      break;
+    case 'n':
+      time = timeForward(arguments, time);
+      break;
+    case 'u':
+      userUsed = addUser(arguments, userBank, userUsed);
+      break;
+    case 'm':
+      moveTask(tasksUsed, userBank, arguments, actBank, time, userUsed, actUsed);
+      break;
+    case 'd':
+      actList(arguments, actBank);
+      break;
+    case 'a':
+      actUsed = addAct(actUsed, arguments, actBank);
+      break;
+    default:
+      printf("Error: No such command\n");
+    }
   }
   return 0;
 }
@@ -174,7 +174,7 @@ int timeForward(char arguments[], int time) {
   return time;
 }
 
-int addUser(char username[], struct user userBank[], int userUsed) {
+int addUser(char username[], user userBank[], int userUsed) {
   int i = 0, count = 0, j = 0;
   char jar[USERMAX];
 
@@ -210,8 +210,8 @@ int addUser(char username[], struct user userBank[], int userUsed) {
   }
 }
 
-void moveTask(int tasksUsed, struct user userBank[],
-  char arguments[], struct act actBank[], int time, int userUsed, int actUsed) {
+void moveTask(int tasksUsed, user userBank[],
+  char arguments[], act actBank[], int time, int userUsed, int actUsed) {
 
   int idRequested, val = 1, i, j = 0, h = 0;
   char userRequested[USERMAX], actRequested[CARMAX];
@@ -256,7 +256,7 @@ void moveTask(int tasksUsed, struct user userBank[],
   }
 }
 
-void actList(char arguments[], struct act actBank[ACTMAX]) {
+void actList(char arguments[], act actBank[ACTMAX]) {
   int i = 0, result = 1, j = 0, h[TASKMAX], count = 0, pote[TASKMAX], printer, * sortedDesc, z;
   char jar[CARMAX];
 
@@ -298,7 +298,7 @@ void actList(char arguments[], struct act actBank[ACTMAX]) {
   }
 }
 
-int addAct(int actUsed, char arguments[], struct act actBank[]) {
+int addAct(int actUsed, char arguments[], act actBank[]) {
   int i = 0;
   char jar[CARMAX];
 
@@ -381,17 +381,10 @@ int partition(int IDs[], int leftLim, int rightLim, int isDesc) {
   return i;
 }
 
-void quicksort(int a[], int leftLim, int rightLim, int isDesc) {
+void quicksort(int IDs[], int leftLim, int rightLim, int isDesc) {
   int i;
   if (rightLim <= leftLim) return;
-  i = partition(a, leftLim, rightLim, isDesc);
-  quicksort(a, leftLim, i-1, isDesc);
-  quicksort(a, i+1, rightLim, isDesc);
-}
-
-
-int eval(char c) {
-  if (c == 't' || c == 'l' || c == 'n' || c == 'u' || c == 'm' || c == 'd' || c == 'a')
-    return 1;
-  return 0;
+  i = partition(IDs, leftLim, rightLim, isDesc);
+  quicksort(IDs, leftLim, i-1, isDesc);
+  quicksort(IDs, i+1, rightLim, isDesc);
 }
