@@ -37,18 +37,17 @@ typedef struct{
 /*---------------------------------Global-Vars--------------------------------*/
 
 task taskBank[TASKMAX];
-
+int tasksUsed = 1, time = 0, userUsed = 0, actUsed = 3;
 
 /*--------------------------------Functions-----------------------------------*/
 
 int addTask(int id, char arguments[]);
 void taskList(char arguments[], int tasksUsed);
-int timeForward(char arguments[], int time);
-int addUser(char arguments[], user userBank[], int userUsed);
-void moveTask(int tasksUsed, user userBank[],
-  char arguments[], act actBank[], int time, int userUsed, int actUsed);
+int timeForward(char arguments[]);
+int addUser(char arguments[], user userBank[]);
+void moveTask(user userBank[], char arguments[], act actBank[]);
 void actList(char arguments[], act actBank[ACTMAX]);
-int addAct(int actUsed, char arguments[], act actBank[]);
+int addAct(char arguments[], act actBank[]);
 int * sortElements(int tasksUsed, int * IDs);
 void changingElems(int a[] , int i, int h);
 int partition(int IDs[], int leftLim, int rightLim, int isDesc);
@@ -59,7 +58,6 @@ void quicksort(int IDs[], int leftLim, int rightLim, int isDesc);
 
 int main() {
   char command, arguments[MAXINPUT];
-  int tasksUsed = 1, time = 0, userUsed = 0, actUsed = 3;
   user userBank[DIFFUSERMAX];
   act actBank[ACTMAX];
 
@@ -77,19 +75,19 @@ int main() {
       taskList(arguments, tasksUsed);
       break;
     case 'n':
-      time = timeForward(arguments, time);
+      time = timeForward(arguments);
       break;
     case 'u':
-      userUsed = addUser(arguments, userBank, userUsed);
+      userUsed = addUser(arguments, userBank);
       break;
     case 'm':
-      moveTask(tasksUsed, userBank, arguments, actBank, time, userUsed, actUsed);
+      moveTask(userBank, arguments, actBank);
       break;
     case 'd':
       actList(arguments, actBank);
       break;
     case 'a':
-      actUsed = addAct(actUsed, arguments, actBank);
+      actUsed = addAct(arguments, actBank);
       break;
     default:
       printf("Error: No such command\n");
@@ -164,7 +162,7 @@ void taskList(char arguments[], int tasksUsed) {
   }
 }
 
-int timeForward(char arguments[], int time) {
+int timeForward(char arguments[]) {
   int tint;
 
   sscanf(arguments, "%d", & tint);
@@ -175,7 +173,7 @@ int timeForward(char arguments[], int time) {
   return time;
 }
 
-int addUser(char username[], user userBank[], int userUsed) {
+int addUser(char username[], user userBank[]) {
   int i = 0, count = 0, j = 0;
   char jar[USERMAX];
 
@@ -211,8 +209,7 @@ int addUser(char username[], user userBank[], int userUsed) {
   }
 }
 
-void moveTask(int tasksUsed, user userBank[],
-  char arguments[], act actBank[], int time, int userUsed, int actUsed) {
+void moveTask(user userBank[], char arguments[], act actBank[]) {
 
   int idRequested, val = 1, i, j = 0, h = 0;
   char userRequested[USERMAX], actRequested[CARMAX];
@@ -299,7 +296,7 @@ void actList(char arguments[], act actBank[ACTMAX]) {
   }
 }
 
-int addAct(int actUsed, char arguments[], act actBank[]) {
+int addAct(char arguments[], act actBank[]) {
   int i = 0;
   char jar[CARMAX];
 
